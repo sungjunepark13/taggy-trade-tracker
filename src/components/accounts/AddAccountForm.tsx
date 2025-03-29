@@ -53,7 +53,13 @@ const AddAccountForm: React.FC<AddAccountFormProps> = ({ open, onOpenChange }) =
   });
 
   const onSubmit = (data: FormValues) => {
-    addAccount(data);
+    // Ensure color has a value, even if it's the default
+    const accountData = {
+      ...data,
+      color: data.color || '#3498db',
+    };
+    
+    addAccount(accountData);
     form.reset();
     onOpenChange(false);
   };
