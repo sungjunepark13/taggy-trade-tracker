@@ -53,9 +53,13 @@ const AddAccountForm: React.FC<AddAccountFormProps> = ({ open, onOpenChange }) =
   });
 
   const onSubmit = (data: FormValues) => {
-    // Ensure color has a value, even if it's the default
+    // All fields from the form are required (enforced by zod validation)
+    // We just need to ensure color has a value, even if it's the default
     const accountData = {
-      ...data,
+      name: data.name,
+      broker: data.broker,
+      accountNumber: data.accountNumber,
+      accountType: data.accountType,
       color: data.color || '#3498db',
     };
     

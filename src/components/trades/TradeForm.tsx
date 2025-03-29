@@ -1,5 +1,5 @@
-
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { 
   Card, 
   CardContent, 
@@ -30,6 +30,7 @@ interface TradeFormProps {
 const TradeForm: React.FC<TradeFormProps> = ({ existingTrade, onSuccess }) => {
   const { state, addTrade, updateTrade } = useTrades();
   const { tags } = state;
+  const navigate = useNavigate();
   
   const [formData, setFormData] = useState({
     date: new Date().toISOString().split('T')[0],
@@ -42,7 +43,6 @@ const TradeForm: React.FC<TradeFormProps> = ({ existingTrade, onSuccess }) => {
     selectedTags: [] as string[]
   });
   
-  // Set form data if editing an existing trade
   useEffect(() => {
     if (existingTrade) {
       setFormData({
@@ -104,7 +104,6 @@ const TradeForm: React.FC<TradeFormProps> = ({ existingTrade, onSuccess }) => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Validate form
     if (!formData.symbol || !formData.entryPrice || !formData.exitPrice || !formData.quantity) {
       toast.error('Please fill in all required fields');
       return;
@@ -131,7 +130,6 @@ const TradeForm: React.FC<TradeFormProps> = ({ existingTrade, onSuccess }) => {
       toast.success('Trade updated successfully');
     } else {
       addTrade(tradeData);
-      // Reset form
       setFormData({
         date: new Date().toISOString().split('T')[0],
         symbol: '',
@@ -143,6 +141,7 @@ const TradeForm: React.FC<TradeFormProps> = ({ existingTrade, onSuccess }) => {
         selectedTags: []
       });
       toast.success('Trade added successfully');
+      navigate('/history');
     }
     
     if (onSuccess) {
