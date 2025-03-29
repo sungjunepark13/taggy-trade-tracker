@@ -67,10 +67,10 @@ const TradeCalendar: React.FC = () => {
                 onSelect={setSelectedDate}
                 className="rounded-md border shadow"
                 components={{
-                  DayContent: (props) => (
+                  DayContent: ({ date }) => (
                     <>
-                      {props.day}
-                      {renderDay(props.date)}
+                      {date.getDate()}
+                      {renderDay(date)}
                     </>
                   ),
                 }}
