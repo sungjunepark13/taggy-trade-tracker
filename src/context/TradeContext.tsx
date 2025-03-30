@@ -1,5 +1,6 @@
 
 import React, { createContext, useContext, useReducer, useEffect } from 'react';
+import { useBrokerageAccounts } from './BrokerageAccountsContext';
 
 // Types
 export type TradeType = 'BUY' | 'SELL';
@@ -23,7 +24,7 @@ export interface Trade {
   profit: number;
   notes: string;
   tags: string[];
-  accountId?: string; // Added accountId field
+  accountId: string; // Account ID field
 }
 
 interface TradeState {
@@ -111,9 +112,9 @@ interface TradeContextProps {
 const TradeContext = createContext<TradeContextProps | undefined>(undefined);
 
 // Sample data
-const sampleTrades: Trade[] = [
+const generateSampleTradesForAccount = (accountId: string): Trade[] => [
   {
-    id: '1',
+    id: `${accountId}-1`,
     date: '2023-11-01',
     symbol: 'AAPL',
     type: 'BUY',
@@ -124,10 +125,10 @@ const sampleTrades: Trade[] = [
     profit: 47.5,
     notes: 'Strong breakout on earnings',
     tags: ['1', '3'],
-    accountId: '1'  // Default account
+    accountId
   },
   {
-    id: '2',
+    id: `${accountId}-2`,
     date: '2023-11-02',
     symbol: 'TSLA',
     type: 'SELL',
@@ -138,10 +139,10 @@ const sampleTrades: Trade[] = [
     profit: 27.25,
     notes: 'Reversal at resistance',
     tags: ['2'],
-    accountId: '1'  // Default account
+    accountId
   },
   {
-    id: '3',
+    id: `${accountId}-3`,
     date: '2023-11-03',
     symbol: 'MSFT',
     type: 'BUY',
@@ -152,10 +153,10 @@ const sampleTrades: Trade[] = [
     profit: -10.2,
     notes: 'Failed breakout, cut losses',
     tags: ['1', '5'],
-    accountId: '1'  // Default account
+    accountId
   },
   {
-    id: '4',
+    id: `${accountId}-4`,
     date: '2023-11-05',
     symbol: 'AMZN',
     type: 'BUY',
@@ -166,10 +167,10 @@ const sampleTrades: Trade[] = [
     profit: 28,
     notes: 'Trend continuation after pullback',
     tags: ['3', '4'],
-    accountId: '1'  // Default account
+    accountId
   },
   {
-    id: '5',
+    id: `${accountId}-5`,
     date: '2023-11-07',
     symbol: 'NVDA',
     type: 'BUY',
@@ -180,12 +181,13 @@ const sampleTrades: Trade[] = [
     profit: 35.2,
     notes: 'Strong momentum, took profits at resistance',
     tags: ['3', '5'],
-    accountId: '1'  // Default account
+    accountId
   }
 ];
 
 export const TradeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [state, dispatch] = useReducer(tradeReducer, initialState);
+  const { accounts } = useBrokerageAccounts();
 
   // Load data from localStorage on mount
   useEffect(() => {
@@ -195,9 +197,18 @@ export const TradeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     if (storedTrades) {
       dispatch({ type: 'SET_TRADES', payload: JSON.parse(storedTrades) });
     } else {
-      // Use sample data if no stored data
-      dispatch({ type: 'SET_TRADES', payload: sampleTrades });
-      localStorage.setItem('trades', JSON.stringify(sampleTrades));
+      // Generate sample trades for each account
+      let allSampleTrades: Trade[] = [];
+      
+      accounts.forEach(account => {
+        allSampleTrades = [
+          ...allSampleTrades,
+          ...generateSampleTradesForAccount(account.id)
+        ];
+      });
+      
+      dispatch({ type: 'SET_TRADES', payload: allSampleTrades });
+      localStorage.setItem('trades', JSON.stringify(allSampleTrades));
     }
     
     if (storedTags) {
@@ -205,7 +216,7 @@ export const TradeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     } else {
       localStorage.setItem('tags', JSON.stringify(initialState.tags));
     }
-  }, []);
+  }, [accounts]);
 
   // Save to localStorage when state changes
   useEffect(() => {
