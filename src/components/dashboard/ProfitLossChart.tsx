@@ -1,6 +1,7 @@
 
 import React, { useState, useMemo } from 'react';
 import { useTrades } from '@/context/TradeContext';
+import { useBrokerageAccounts } from '@/context/BrokerageAccountsContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { formatCurrency } from '@/utils/tradeUtils';
@@ -34,13 +35,20 @@ type TimeRangeKey = keyof typeof TIME_RANGES;
 const ProfitLossChart = () => {
   const { state } = useTrades();
   const { trades } = state;
+  const { activeAccountId } = useBrokerageAccounts();
   const [timeRange, setTimeRange] = useState<TimeRangeKey>('1d');
 
+  // Filter trades based on the active account
+  const accountTrades = useMemo(() => {
+    if (!activeAccountId) return trades;
+    return trades.filter(trade => trade.accountId === activeAccountId);
+  }, [trades, activeAccountId]);
+
   const chartData = useMemo(() => {
-    if (!trades.length) return [];
+    if (!accountTrades.length) return [];
 
     // Sort trades by date (oldest first)
-    const sortedTrades = [...trades].sort(
+    const sortedTrades = [...accountTrades].sort(
       (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
     );
 
@@ -53,7 +61,7 @@ const ProfitLossChart = () => {
         profit: cumulativeProfit,
       };
     });
-  }, [trades]);
+  }, [accountTrades]);
 
   // Filter data based on selected time range
   const filteredData = useMemo(() => {
@@ -71,8 +79,8 @@ const ProfitLossChart = () => {
   }, [chartData, timeRange]);
 
   // Calculate min and max for better axis visualization
-  const yMin = Math.min(...filteredData.map(d => d.profit));
-  const yMax = Math.max(...filteredData.map(d => d.profit));
+  const yMin = Math.min(...filteredData.map(d => d.profit), 0); // Ensure we include 0
+  const yMax = Math.max(...filteredData.map(d => d.profit), 0); // Ensure we include 0
   
   // Add some padding to y-axis
   const yDomain = [
@@ -100,7 +108,9 @@ const ProfitLossChart = () => {
           <CardTitle>Profit & Loss</CardTitle>
         </CardHeader>
         <CardContent className="h-80 flex items-center justify-center">
-          <p className="text-muted-foreground">No trade data available</p>
+          <p className="text-muted-foreground">
+            {activeAccountId ? "No trade data available for this account" : "No trade data available"}
+          </p>
         </CardContent>
       </Card>
     );

@@ -23,6 +23,7 @@ export interface Trade {
   profit: number;
   notes: string;
   tags: string[];
+  accountId?: string; // Added accountId field
 }
 
 interface TradeState {
@@ -122,7 +123,8 @@ const sampleTrades: Trade[] = [
     status: 'WIN',
     profit: 47.5,
     notes: 'Strong breakout on earnings',
-    tags: ['1', '3']
+    tags: ['1', '3'],
+    accountId: '1'  // Default account
   },
   {
     id: '2',
@@ -135,7 +137,8 @@ const sampleTrades: Trade[] = [
     status: 'WIN',
     profit: 27.25,
     notes: 'Reversal at resistance',
-    tags: ['2']
+    tags: ['2'],
+    accountId: '1'  // Default account
   },
   {
     id: '3',
@@ -148,7 +151,8 @@ const sampleTrades: Trade[] = [
     status: 'LOSS',
     profit: -10.2,
     notes: 'Failed breakout, cut losses',
-    tags: ['1', '5']
+    tags: ['1', '5'],
+    accountId: '1'  // Default account
   },
   {
     id: '4',
@@ -161,7 +165,8 @@ const sampleTrades: Trade[] = [
     status: 'WIN',
     profit: 28,
     notes: 'Trend continuation after pullback',
-    tags: ['3', '4']
+    tags: ['3', '4'],
+    accountId: '1'  // Default account
   },
   {
     id: '5',
@@ -174,7 +179,8 @@ const sampleTrades: Trade[] = [
     status: 'WIN',
     profit: 35.2,
     notes: 'Strong momentum, took profits at resistance',
-    tags: ['3', '5']
+    tags: ['3', '5'],
+    accountId: '1'  // Default account
   }
 ];
 
