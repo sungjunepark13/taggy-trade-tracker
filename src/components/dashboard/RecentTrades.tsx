@@ -6,9 +6,11 @@ import { formatCurrency, getProfitClass, findTagById } from '@/utils/tradeUtils'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Trash2 } from 'lucide-react';
+import { toast } from 'sonner';
 
 const RecentTrades: React.FC = () => {
-  const { state } = useTrades();
+  const { state, deleteTrade } = useTrades();
   const { trades, tags } = state;
 
   // Sort trades by date (newest first) and take the 5 most recent
@@ -29,6 +31,13 @@ const RecentTrades: React.FC = () => {
     });
   };
 
+  const handleDelete = (tradeId: string) => {
+    if (window.confirm('Are you sure you want to delete this trade?')) {
+      deleteTrade(tradeId);
+      toast.success('Trade deleted successfully');
+    }
+  };
+
   return (
     <Card className="col-span-1 md:col-span-2">
       <CardHeader>
@@ -43,8 +52,19 @@ const RecentTrades: React.FC = () => {
                   <div className="font-semibold">
                     {trade.symbol} ({trade.type})
                   </div>
-                  <div className={getProfitClass(trade.profit)}>
-                    {formatCurrency(trade.profit)}
+                  <div className="flex items-center gap-2">
+                    <div className={getProfitClass(trade.profit)}>
+                      {formatCurrency(trade.profit)}
+                    </div>
+                    <Button 
+                      variant="ghost" 
+                      size="icon" 
+                      className="h-8 w-8 text-muted-foreground hover:text-destructive" 
+                      onClick={() => handleDelete(trade.id)}
+                      title="Delete trade"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
                   </div>
                 </div>
                 <div className="text-sm text-muted-foreground mb-2">
