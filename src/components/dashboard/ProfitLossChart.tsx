@@ -1,5 +1,5 @@
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useTrades } from '@/context/TradeContext';
 import { useBrokerageAccounts } from '@/context/BrokerageAccountsContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -37,12 +37,20 @@ const ProfitLossChart = () => {
   const { trades } = state;
   const { activeAccountId } = useBrokerageAccounts();
   const [timeRange, setTimeRange] = useState<TimeRangeKey>('1d');
+  const [noData, setNoData] = useState(false);
 
   // Filter trades based on the active account
   const accountTrades = useMemo(() => {
     if (!activeAccountId) return trades;
-    return trades.filter(trade => trade.accountId === activeAccountId);
+    const filteredTrades = trades.filter(trade => trade.accountId === activeAccountId);
+    console.log('Filtered trades for account', activeAccountId, filteredTrades);
+    return filteredTrades;
   }, [trades, activeAccountId]);
+
+  useEffect(() => {
+    // Update the noData state based on filtered data
+    setNoData(accountTrades.length === 0);
+  }, [accountTrades]);
 
   const chartData = useMemo(() => {
     if (!accountTrades.length) return [];
@@ -101,7 +109,7 @@ const ProfitLossChart = () => {
     }
   };
 
-  if (!filteredData.length) {
+  if (noData) {
     return (
       <Card>
         <CardHeader>

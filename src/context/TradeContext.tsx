@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useReducer, useEffect } from 'react';
 import { useBrokerageAccounts } from './BrokerageAccountsContext';
 
@@ -111,79 +110,83 @@ interface TradeContextProps {
 
 const TradeContext = createContext<TradeContextProps | undefined>(undefined);
 
-// Sample data
-const generateSampleTradesForAccount = (accountId: string): Trade[] => [
-  {
-    id: `${accountId}-1`,
-    date: '2023-11-01',
-    symbol: 'AAPL',
-    type: 'BUY',
-    entryPrice: 170.5,
-    exitPrice: 175.25,
-    quantity: 10,
-    status: 'WIN',
-    profit: 47.5,
-    notes: 'Strong breakout on earnings',
-    tags: ['1', '3'],
-    accountId
-  },
-  {
-    id: `${accountId}-2`,
-    date: '2023-11-02',
-    symbol: 'TSLA',
-    type: 'SELL',
-    entryPrice: 210.75,
-    exitPrice: 205.3,
-    quantity: 5,
-    status: 'WIN',
-    profit: 27.25,
-    notes: 'Reversal at resistance',
-    tags: ['2'],
-    accountId
-  },
-  {
-    id: `${accountId}-3`,
-    date: '2023-11-03',
-    symbol: 'MSFT',
-    type: 'BUY',
-    entryPrice: 335.8,
-    exitPrice: 332.4,
-    quantity: 3,
-    status: 'LOSS',
-    profit: -10.2,
-    notes: 'Failed breakout, cut losses',
-    tags: ['1', '5'],
-    accountId
-  },
-  {
-    id: `${accountId}-4`,
-    date: '2023-11-05',
-    symbol: 'AMZN',
-    type: 'BUY',
-    entryPrice: 142.3,
-    exitPrice: 145.8,
-    quantity: 8,
-    status: 'WIN',
-    profit: 28,
-    notes: 'Trend continuation after pullback',
-    tags: ['3', '4'],
-    accountId
-  },
-  {
-    id: `${accountId}-5`,
-    date: '2023-11-07',
-    symbol: 'NVDA',
-    type: 'BUY',
-    entryPrice: 460.2,
-    exitPrice: 477.8,
-    quantity: 2,
-    status: 'WIN',
-    profit: 35.2,
-    notes: 'Strong momentum, took profits at resistance',
-    tags: ['3', '5'],
-    accountId
-  }
-];
+// Sample data generator with properly varied dates (within the last week)
+const generateSampleTradesForAccount = (accountId: string): Trade[] => {
+  const today = new Date();
+  
+  return [
+    {
+      id: `${accountId}-1`,
+      date: new Date(today.getTime() - 5 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], // 5 days ago
+      symbol: 'AAPL',
+      type: 'BUY',
+      entryPrice: 170.5,
+      exitPrice: 175.25,
+      quantity: 10,
+      status: 'WIN',
+      profit: 47.5,
+      notes: 'Strong breakout on earnings',
+      tags: ['1', '3'],
+      accountId
+    },
+    {
+      id: `${accountId}-2`,
+      date: new Date(today.getTime() - 4 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], // 4 days ago
+      symbol: 'TSLA',
+      type: 'SELL',
+      entryPrice: 210.75,
+      exitPrice: 205.3,
+      quantity: 5,
+      status: 'WIN',
+      profit: 27.25,
+      notes: 'Reversal at resistance',
+      tags: ['2'],
+      accountId
+    },
+    {
+      id: `${accountId}-3`,
+      date: new Date(today.getTime() - 3 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], // 3 days ago
+      symbol: 'MSFT',
+      type: 'BUY',
+      entryPrice: 335.8,
+      exitPrice: 332.4,
+      quantity: 3,
+      status: 'LOSS',
+      profit: -10.2,
+      notes: 'Failed breakout, cut losses',
+      tags: ['1', '5'],
+      accountId
+    },
+    {
+      id: `${accountId}-4`,
+      date: new Date(today.getTime() - 2 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], // 2 days ago
+      symbol: 'AMZN',
+      type: 'BUY',
+      entryPrice: 142.3,
+      exitPrice: 145.8,
+      quantity: 8,
+      status: 'WIN',
+      profit: 28,
+      notes: 'Trend continuation after pullback',
+      tags: ['3', '4'],
+      accountId
+    },
+    {
+      id: `${accountId}-5`,
+      date: new Date(today.getTime() - 1 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], // 1 day ago
+      symbol: 'NVDA',
+      type: 'BUY',
+      entryPrice: 460.2,
+      exitPrice: 477.8,
+      quantity: 2,
+      status: 'WIN',
+      profit: 35.2,
+      notes: 'Strong momentum, took profits at resistance',
+      tags: ['3', '5'],
+      accountId
+    }
+  ];
+};
 
 export const TradeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [state, dispatch] = useReducer(tradeReducer, initialState);
@@ -201,10 +204,8 @@ export const TradeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       let allSampleTrades: Trade[] = [];
       
       accounts.forEach(account => {
-        allSampleTrades = [
-          ...allSampleTrades,
-          ...generateSampleTradesForAccount(account.id)
-        ];
+        const sampleTrades = generateSampleTradesForAccount(account.id);
+        allSampleTrades = [...allSampleTrades, ...sampleTrades];
       });
       
       dispatch({ type: 'SET_TRADES', payload: allSampleTrades });
