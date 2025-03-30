@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
@@ -20,6 +21,7 @@ import {
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { useTrades, Trade, TradeType, TradeStatus } from '@/context/TradeContext';
+import { useBrokerageAccounts } from '@/context/BrokerageAccountsContext';
 import { toast } from 'sonner';
 
 interface TradeFormProps {
@@ -30,6 +32,7 @@ interface TradeFormProps {
 const TradeForm: React.FC<TradeFormProps> = ({ existingTrade, onSuccess }) => {
   const { state, addTrade, updateTrade } = useTrades();
   const { tags } = state;
+  const { activeAccountId } = useBrokerageAccounts();
   const navigate = useNavigate();
   
   const [formData, setFormData] = useState({
@@ -108,6 +111,11 @@ const TradeForm: React.FC<TradeFormProps> = ({ existingTrade, onSuccess }) => {
       toast.error('Please fill in all required fields');
       return;
     }
+
+    if (!activeAccountId) {
+      toast.error('No active account selected');
+      return;
+    }
     
     const profit = calculateProfit();
     const status = determineStatus(profit);
@@ -122,7 +130,8 @@ const TradeForm: React.FC<TradeFormProps> = ({ existingTrade, onSuccess }) => {
       status,
       profit,
       notes: formData.notes,
-      tags: formData.selectedTags
+      tags: formData.selectedTags,
+      accountId: existingTrade ? existingTrade.accountId : activeAccountId
     };
     
     if (existingTrade) {
