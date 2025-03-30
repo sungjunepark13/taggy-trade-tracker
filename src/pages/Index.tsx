@@ -5,6 +5,7 @@ import { TradeProvider } from '@/context/TradeContext';
 import TradeStats from '@/components/dashboard/TradeStats';
 import RecentTrades from '@/components/dashboard/RecentTrades';
 import PerformanceByTag from '@/components/dashboard/PerformanceByTag';
+import ProfitLossChart from '@/components/dashboard/ProfitLossChart';
 
 const Dashboard: React.FC = () => {
   return (
@@ -16,6 +17,8 @@ const Dashboard: React.FC = () => {
           </div>
           
           <TradeStats />
+          
+          <ProfitLossChart />
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <RecentTrades />
