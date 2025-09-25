@@ -35,20 +35,29 @@ interface FinanceContextProps {
   setCurrentMonth: (month: number) => void;
 }
 
-const initialAccountData: AccountData[] = [
-  { month: 1, debt: 50000, retirement401: 10000, house: 200000, emergencyFund: 5000, checking: 15000, miscellaneous: 2000 },
-  { month: 2, debt: 48000, retirement401: 12000, house: 202000, emergencyFund: 6000, checking: 16000, miscellaneous: 2500 },
-  { month: 3, debt: 46000, retirement401: 14000, house: 204000, emergencyFund: 7000, checking: 17000, miscellaneous: 3000 },
-  { month: 4, debt: 44000, retirement401: 16000, house: 206000, emergencyFund: 8000, checking: 18000, miscellaneous: 3500 },
-  { month: 5, debt: 42000, retirement401: 18000, house: 208000, emergencyFund: 9000, checking: 19000, miscellaneous: 4000 },
-  { month: 6, debt: 40000, retirement401: 20000, house: 210000, emergencyFund: 10000, checking: 20000, miscellaneous: 4500 },
-  { month: 7, debt: 38000, retirement401: 22000, house: 212000, emergencyFund: 11000, checking: 21000, miscellaneous: 5000 },
-  { month: 8, debt: 36000, retirement401: 24000, house: 214000, emergencyFund: 12000, checking: 22000, miscellaneous: 5500 },
-  { month: 9, debt: 34000, retirement401: 26000, house: 216000, emergencyFund: 13000, checking: 23000, miscellaneous: 6000 },
-  { month: 10, debt: 32000, retirement401: 28000, house: 218000, emergencyFund: 14000, checking: 24000, miscellaneous: 6500 },
-  { month: 11, debt: 30000, retirement401: 30000, house: 220000, emergencyFund: 15000, checking: 25000, miscellaneous: 7000 },
-  { month: 12, debt: 28000, retirement401: 32000, house: 222000, emergencyFund: 16000, checking: 26000, miscellaneous: 7500 },
-];
+// Generate 5 years (60 months) of account data
+const generateAccountData = (): AccountData[] => {
+  const data: AccountData[] = [];
+  
+  for (let month = 1; month <= 60; month++) {
+    // Calculate progressive changes over 5 years
+    const yearProgress = (month - 1) / 12;
+    
+    data.push({
+      month,
+      debt: Math.max(0, 50000 - (month * 800)), // Decreasing debt
+      retirement401: 10000 + (month * 1200), // Growing 401k
+      house: 200000 + (month * 600), // Growing house value
+      emergencyFund: Math.min(25000, 5000 + (month * 300)), // Growing emergency fund up to 25k
+      checking: 15000 + Math.sin(month * 0.5) * 5000, // Fluctuating checking account
+      miscellaneous: 2000 + (month * 100), // Slowly growing miscellaneous
+    });
+  }
+  
+  return data;
+};
+
+const initialAccountData: AccountData[] = generateAccountData();
 
 const initialMonthlyExpenses: MonthlyExpense[] = [
   { label: 'Total Take Home Pay', amount: 8000 },
@@ -64,10 +73,12 @@ const initialMonthlyExpenses: MonthlyExpense[] = [
 ];
 
 const initialMilestones: Milestone[] = [
-  { id: '1', title: 'Emergency Fund Goal', description: 'Reached $10,000 emergency fund', targetMonth: 6, achieved: false },
-  { id: '2', title: 'Debt Reduction', description: 'Reduced debt by $10,000', targetMonth: 4, achieved: false },
-  { id: '3', title: '401k Milestone', description: 'Reached $25,000 in 401k', targetMonth: 8, achieved: false },
-  { id: '4', title: 'House Value Growth', description: 'House value increased by $20,000', targetMonth: 12, achieved: false },
+  { id: '1', title: 'Emergency Fund $10K', description: 'Reached $10,000 emergency fund milestone', targetMonth: 17, achieved: false },
+  { id: '2', title: 'Debt Under $40K', description: 'Reduced debt below $40,000', targetMonth: 13, achieved: false },
+  { id: '3', title: '401k $25K Milestone', description: 'Reached $25,000 in retirement savings', targetMonth: 13, achieved: false },
+  { id: '4', title: 'House Value $220K', description: 'House value increased to $220,000', targetMonth: 34, achieved: false },
+  { id: '5', title: 'Emergency Fund $20K', description: 'Built emergency fund to $20,000', targetMonth: 50, achieved: false },
+  { id: '6', title: 'Debt Free Goal', description: 'Eliminated all debt completely', targetMonth: 60, achieved: false },
 ];
 
 const initialState: FinanceState = {

@@ -31,16 +31,37 @@ const AccountDetail: React.FC = () => {
     return <div>Invalid account</div>;
   }
 
-  const accountTitles: Record<string, string> = {
-    debt: 'Debt',
-    retirement401: '401(k)',
-    house: 'House',
-    emergencyFund: 'Emergency Fund',
-    checking: 'Checking',
-    miscellaneous: 'Miscellaneous',
+  const accountInfo: Record<string, { title: string; description: string }> = {
+    debt: {
+      title: 'Debt',
+      description: 'Track your total outstanding debt including credit cards, loans, and other liabilities. The goal is to systematically reduce this balance through consistent payments while avoiding new debt accumulation.'
+    },
+    retirement401: {
+      title: '401(k)',
+      description: 'Your employer-sponsored retirement account with tax advantages. Contributions are typically made pre-tax, and many employers offer matching contributions. This is crucial for long-term financial security.'
+    },
+    house: {
+      title: 'House',
+      description: 'The estimated market value of your primary residence. This typically appreciates over time and represents a significant portion of your net worth. Track improvements and market changes that affect value.'
+    },
+    emergencyFund: {
+      title: 'Emergency Fund',
+      description: 'A savings buffer for unexpected expenses like medical bills, job loss, or major repairs. Financial experts recommend 3-6 months of living expenses in this readily accessible fund.'
+    },
+    checking: {
+      title: 'Checking',
+      description: 'Your primary liquid account for daily transactions, bill payments, and short-term cash management. This balance fluctuates with your income and spending patterns.'
+    },
+    miscellaneous: {
+      title: 'Miscellaneous',
+      description: 'Other investments and assets including savings accounts, CDs, stocks, bonds, or alternative investments. This represents your diversified portfolio beyond primary accounts.'
+    },
   };
 
-  const accountTitle = accountTitles[accountKey] || 'Unknown Account';
+  const account = accountInfo[accountKey];
+  if (!account) {
+    return <div>Invalid account</div>;
+  }
   const currentValue = state.accountData.find(data => data.month === state.currentMonth)?.[accountKey as keyof typeof state.accountData[0]] || 0;
 
   // Calculate monthly changes
@@ -85,9 +106,12 @@ const AccountDetail: React.FC = () => {
             Back to Dashboard
           </Button>
           <div>
-            <h1 className="text-3xl font-bold tracking-tight">{accountTitle}</h1>
-            <p className="text-muted-foreground">
+            <h1 className="text-3xl font-bold tracking-tight">{account.title}</h1>
+            <p className="text-muted-foreground mb-3">
               Current Balance: {formatCurrency(currentValue)}
+            </p>
+            <p className="text-sm text-muted-foreground max-w-2xl">
+              {account.description}
             </p>
           </div>
         </div>
@@ -102,9 +126,13 @@ const AccountDetail: React.FC = () => {
               <ChartContainer config={chartConfig}>
                 <LineChart data={monthlyData} margin={{ top: 20, right: 30, left: 20, bottom: 20 }}>
                   <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                  <XAxis 
+                   <XAxis 
                     dataKey="month" 
-                    tickFormatter={(value) => `Month ${value}`}
+                    tickFormatter={(value) => {
+                      const year = Math.ceil(value / 12);
+                      const monthInYear = ((value - 1) % 12) + 1;
+                      return monthInYear === 1 ? `Y${year}` : '';
+                    }}
                     tickLine={false}
                     axisLine={false}
                   />
@@ -120,7 +148,7 @@ const AccountDetail: React.FC = () => {
                     stroke="var(--color-value)"
                     strokeWidth={3}
                     dot={{ r: 4 }}
-                    name={accountTitle}
+                    name={account.title}
                   />
                 </LineChart>
               </ChartContainer>
@@ -136,9 +164,13 @@ const AccountDetail: React.FC = () => {
               <ChartContainer config={chartConfig}>
                 <BarChart data={monthlyData.slice(1)} margin={{ top: 20, right: 30, left: 20, bottom: 20 }}>
                   <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                  <XAxis 
+                   <XAxis 
                     dataKey="month" 
-                    tickFormatter={(value) => `Month ${value}`}
+                    tickFormatter={(value) => {
+                      const year = Math.ceil(value / 12);
+                      const monthInYear = ((value - 1) % 12) + 1;
+                      return monthInYear === 1 ? `Y${year}` : '';
+                    }}
                     tickLine={false}
                     axisLine={false}
                   />
@@ -180,9 +212,14 @@ const AccountDetail: React.FC = () => {
                     const percentChange = index > 0 ? 
                       ((data.value - monthlyData[index - 1].value) / monthlyData[index - 1].value * 100) : 0;
                     
+                    const year = Math.ceil(data.month / 12);
+                    const monthInYear = ((data.month - 1) % 12) + 1;
+                    const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+                    const displayDate = `${monthNames[monthInYear - 1]} Y${year}`;
+                    
                     return (
                       <tr key={data.month} className="border-b">
-                        <td className="p-2">Month {data.month}</td>
+                        <td className="p-2">{displayDate}</td>
                         <td className="text-right p-2 font-medium">
                           {formatCurrency(data.value)}
                         </td>
@@ -216,7 +253,12 @@ const CustomTooltip = ({ active, payload, label }: any) => {
 
   return (
     <div className="bg-background border border-border p-3 rounded-md shadow-md">
-      <p className="text-sm font-medium mb-1">Month {label}</p>
+      <p className="text-sm font-medium mb-1">{(() => {
+        const year = Math.ceil(label / 12);
+        const monthInYear = ((label - 1) % 12) + 1;
+        const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        return `${monthNames[monthInYear - 1]} Y${year}`;
+      })()}</p>
       <p className="text-sm" style={{ color: payload[0].color }}>
         Balance: {formatCurrency(payload[0].value)}
       </p>
@@ -232,7 +274,12 @@ const ChangeTooltip = ({ active, payload, label }: any) => {
   const change = payload[0].value;
   return (
     <div className="bg-background border border-border p-3 rounded-md shadow-md">
-      <p className="text-sm font-medium mb-1">Month {label}</p>
+      <p className="text-sm font-medium mb-1">{(() => {
+        const year = Math.ceil(label / 12);
+        const monthInYear = ((label - 1) % 12) + 1;
+        const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        return `${monthNames[monthInYear - 1]} Y${year}`;
+      })()}</p>
       <p className={`text-sm ${change > 0 ? 'text-success' : change < 0 ? 'text-destructive' : 'text-muted-foreground'}`}>
         Change: {formatCurrency(change)}
       </p>
