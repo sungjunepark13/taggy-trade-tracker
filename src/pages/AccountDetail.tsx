@@ -4,7 +4,7 @@ import { useFinance } from '@/context/FinanceContext';
 import AppLayout from '@/components/layout/AppLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Target, Lightbulb, User } from 'lucide-react';
 import { formatCurrency } from '@/utils/tradeUtils';
 import {
   ChartContainer,
@@ -31,37 +31,104 @@ const AccountDetail: React.FC = () => {
     return <div>Invalid account</div>;
   }
 
-  const accountInfo: Record<string, { title: string; description: string }> = {
+  const accountInfo: Record<string, { 
+    title: string; 
+    description: string;
+    strategy: string;
+    tips: string[];
+    about: string;
+  }> = {
     debt: {
-      title: 'Debt',
-      description: 'Track your total outstanding debt including credit cards, loans, and other liabilities. The goal is to systematically reduce this balance through consistent payments while avoiding new debt accumulation.'
+      title: 'Debt Management',
+      description: 'Track your total outstanding debt including credit cards, loans, and other liabilities. The goal is to systematically reduce this balance through consistent payments while avoiding new debt accumulation.',
+      strategy: 'Debt Avalanche Strategy: Focus on paying off high-interest debt first while making minimum payments on other debts. This approach saves the most money in interest over time. Consider debt consolidation if it offers lower interest rates, and create a strict budget to prevent new debt accumulation.',
+      tips: [
+        'Pay more than the minimum payment whenever possible',
+        'Consider the debt avalanche method (highest interest first) or debt snowball (smallest balance first)',
+        'Avoid taking on new debt while paying off existing balances',
+        'Look into debt consolidation options for better interest rates',
+        'Create an emergency fund to avoid future debt',
+        'Track your debt-to-income ratio and aim to keep it below 36%'
+      ],
+      about: 'Debt management is crucial for financial health. High-interest debt can significantly impact your ability to build wealth. By systematically reducing debt, you free up money for savings and investments. The psychological benefit of becoming debt-free cannot be overstated - it provides peace of mind and financial flexibility for future opportunities.'
     },
     retirement401: {
-      title: '401(k)',
-      description: 'Your employer-sponsored retirement account with tax advantages. Contributions are typically made pre-tax, and many employers offer matching contributions. This is crucial for long-term financial security.'
+      title: '401(k) Retirement Planning',
+      description: 'Your employer-sponsored retirement account with tax advantages. Contributions are typically made pre-tax, and many employers offer matching contributions. This is crucial for long-term financial security.',
+      strategy: 'Maximize Employer Match Strategy: Always contribute enough to get the full employer match - it\'s free money. Aim to contribute 10-15% of your income. Take advantage of catch-up contributions if you\'re over 50. Consider Roth 401(k) options for tax diversification in retirement.',
+      tips: [
+        'Contribute at least enough to get full employer match',
+        'Increase contributions by 1% annually or with each raise',
+        'Take advantage of catch-up contributions after age 50',
+        'Diversify investments within your 401(k) portfolio',
+        'Review and rebalance your portfolio annually',
+        'Consider Roth 401(k) contributions for tax diversification'
+      ],
+      about: 'Your 401(k) is one of the most powerful wealth-building tools available. The combination of tax advantages, employer matching, and compound growth over decades can result in substantial retirement savings. Starting early and contributing consistently, even small amounts, can lead to significant wealth accumulation due to the power of compound interest.'
     },
     house: {
-      title: 'House',
-      description: 'The estimated market value of your primary residence. This typically appreciates over time and represents a significant portion of your net worth. Track improvements and market changes that affect value.'
+      title: 'Home Equity & Real Estate',
+      description: 'The estimated market value of your primary residence. This typically appreciates over time and represents a significant portion of your net worth. Track improvements and market changes that affect value.',
+      strategy: 'Home Equity Building Strategy: Focus on making extra principal payments to build equity faster. Consider home improvements that add value, particularly kitchen and bathroom renovations. Monitor local market trends and consider refinancing when rates are favorable.',
+      tips: [
+        'Make extra principal payments to build equity faster',
+        'Invest in home improvements that add value (kitchen, bathrooms)',
+        'Monitor local real estate market trends',
+        'Consider refinancing when interest rates drop significantly',
+        'Maintain your property to preserve and increase value',
+        'Keep detailed records of home improvements for tax purposes'
+      ],
+      about: 'Real estate has historically been one of the best long-term investments for building wealth. Your home serves dual purposes - providing shelter and building equity. Unlike other investments, you can live in your real estate investment while it appreciates. Home equity can also be leveraged for other investments or major expenses through home equity loans or lines of credit.'
     },
     emergencyFund: {
       title: 'Emergency Fund',
-      description: 'A savings buffer for unexpected expenses like medical bills, job loss, or major repairs. Financial experts recommend 3-6 months of living expenses in this readily accessible fund.'
+      description: 'A savings buffer for unexpected expenses like medical bills, job loss, or major repairs. Financial experts recommend 3-6 months of living expenses in this readily accessible fund.',
+      strategy: 'Emergency Fund Strategy: Start with a goal of $1,000, then build to 3-6 months of expenses. Keep funds in a high-yield savings account for easy access. Automate contributions to build the fund consistently. Only use for true emergencies, not planned expenses.',
+      tips: [
+        'Start with a mini emergency fund of $1,000',
+        'Build to 3-6 months of living expenses gradually',
+        'Keep funds in a high-yield savings account for liquidity',
+        'Automate monthly contributions to build consistently',
+        'Only use for true emergencies, not planned purchases',
+        'Replenish immediately after using emergency funds'
+      ],
+      about: 'An emergency fund is your financial safety net and the foundation of financial security. It prevents you from going into debt when unexpected expenses arise and provides peace of mind. Having an emergency fund allows you to take calculated risks in other areas of your financial life, knowing you have a buffer for unforeseen circumstances.'
     },
     checking: {
-      title: 'Checking',
-      description: 'Your primary liquid account for daily transactions, bill payments, and short-term cash management. This balance fluctuates with your income and spending patterns.'
+      title: 'Checking Account & Cash Flow',
+      description: 'Your primary liquid account for daily transactions, bill payments, and short-term cash management. This balance fluctuates with your income and spending patterns.',
+      strategy: 'Cash Flow Management Strategy: Maintain 1-2 months of expenses in checking for smooth cash flow. Use budgeting tools to track income and expenses. Set up automatic bill payments to avoid late fees. Keep some buffer for unexpected expenses.',
+      tips: [
+        'Maintain 1-2 months of expenses for smooth cash flow',
+        'Set up automatic bill payments to avoid late fees',
+        'Use budgeting apps to track spending patterns',
+        'Review monthly statements for unauthorized charges',
+        'Keep a small buffer for unexpected expenses',
+        'Consider high-yield checking accounts for better returns'
+      ],
+      about: 'Your checking account is the hub of your financial life. Proper cash flow management ensures you can meet your obligations while maximizing the money available for savings and investments. Good checking account management includes maintaining adequate balances, monitoring transactions, and optimizing the timing of income and expenses.'
     },
     miscellaneous: {
-      title: 'Miscellaneous',
-      description: 'Other investments and assets including savings accounts, CDs, stocks, bonds, or alternative investments. This represents your diversified portfolio beyond primary accounts.'
-    },
+      title: 'Investment Portfolio',
+      description: 'Other investments and assets including savings accounts, CDs, stocks, bonds, or alternative investments. This represents your diversified portfolio beyond primary accounts.',
+      strategy: 'Diversified Investment Strategy: Spread investments across different asset classes (stocks, bonds, real estate, commodities). Rebalance regularly to maintain target allocations. Consider low-cost index funds for broad market exposure. Dollar-cost average into investments consistently.',
+      tips: [
+        'Diversify across different asset classes and sectors',
+        'Use low-cost index funds for broad market exposure',
+        'Rebalance your portfolio quarterly or semi-annually',
+        'Dollar-cost average to reduce timing risk',
+        'Keep investment costs low to maximize returns',
+        'Stay disciplined and avoid emotional investing decisions'
+      ],
+      about: 'A diversified investment portfolio is essential for long-term wealth building. This account represents your growth investments beyond retirement accounts and emergency funds. The key to successful investing is consistency, diversification, and keeping costs low. Over time, a well-managed investment portfolio can significantly outpace inflation and build substantial wealth.'
+    }
   };
 
   const account = accountInfo[accountKey];
   if (!account) {
     return <div>Invalid account</div>;
   }
+
   const currentValue = state.accountData.find(data => data.month === state.currentMonth)?.[accountKey as keyof typeof state.accountData[0]] || 0;
 
   // Calculate monthly changes
@@ -114,6 +181,56 @@ const AccountDetail: React.FC = () => {
               {account.description}
             </p>
           </div>
+        </div>
+
+        {/* Strategy, Tips, and About Section */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Target className="h-5 w-5" />
+                Strategy
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm text-muted-foreground leading-relaxed">
+                {account.strategy}
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Lightbulb className="h-5 w-5" />
+                Tips
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ul className="space-y-2">
+                {account.tips.map((tip, index) => (
+                  <li key={index} className="text-sm text-muted-foreground flex items-start gap-2">
+                    <span className="text-primary mt-1">•</span>
+                    <span>{tip}</span>
+                  </li>
+                ))}
+              </ul>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <User className="h-5 w-5" />
+                About
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm text-muted-foreground leading-relaxed">
+                {account.about}
+              </p>
+            </CardContent>
+          </Card>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -218,17 +335,17 @@ const AccountDetail: React.FC = () => {
                     const displayDate = `${monthNames[monthInYear - 1]} Y${year}`;
                     
                     return (
-                      <tr key={data.month} className="border-b">
-                        <td className="p-2">{displayDate}</td>
+                      <tr key={data.month} className="border-b hover:bg-muted/50">
+                        <td className="p-2 font-medium">{displayDate}</td>
                         <td className="text-right p-2 font-medium">
                           {formatCurrency(data.value)}
                         </td>
-                        <td className={`text-right p-2 ${
+                        <td className={`text-right p-2 font-medium ${
                           data.change > 0 ? 'text-success' : data.change < 0 ? 'text-destructive' : 'text-muted-foreground'
                         }`}>
                           {index > 0 ? formatCurrency(data.change) : '-'}
                         </td>
-                        <td className={`text-right p-2 ${
+                        <td className={`text-right p-2 font-medium ${
                           percentChange > 0 ? 'text-success' : percentChange < 0 ? 'text-destructive' : 'text-muted-foreground'
                         }`}>
                           {index > 0 ? `${percentChange > 0 ? '+' : ''}${percentChange.toFixed(1)}%` : '-'}
