@@ -1,36 +1,37 @@
 
 import React from 'react';
 import AppLayout from '@/components/layout/AppLayout';
-import { TradeProvider } from '@/context/TradeContext';
-import { BrokerageAccountsProvider } from '@/context/BrokerageAccountsContext';
-import TradeStats from '@/components/dashboard/TradeStats';
-import RecentTrades from '@/components/dashboard/RecentTrades';
-import PerformanceByTag from '@/components/dashboard/PerformanceByTag';
-import ProfitLossChart from '@/components/dashboard/ProfitLossChart';
-import AccountTabs from '@/components/accounts/AccountTabs';
+import { FinanceProvider } from '@/context/FinanceContext';
+import AccountsOverview from '@/components/finance/AccountsOverview';
+import FinanceChart from '@/components/finance/FinanceChart';
+import MonthSlider from '@/components/finance/MonthSlider';
+import MonthlyExpenses from '@/components/finance/MonthlyExpenses';
+import Milestones from '@/components/finance/Milestones';
 
 const Dashboard: React.FC = () => {
   return (
-    <BrokerageAccountsProvider>
-      <TradeProvider>
-        <AppLayout>
-          <div className="space-y-6">
-            <div className="flex items-center justify-between">
-              <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
+    <FinanceProvider>
+      <AppLayout>
+        <div className="space-y-6">
+          <div className="flex items-center justify-between">
+            <h1 className="text-3xl font-bold tracking-tight">Finance Dashboard</h1>
+          </div>
+          
+          <MonthSlider />
+          <AccountsOverview />
+          
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="lg:col-span-2">
+              <FinanceChart />
             </div>
-            
-            <AccountTabs />
-            <TradeStats />
-            <ProfitLossChart />
-            
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <RecentTrades />
-              <PerformanceByTag />
+            <div className="space-y-6">
+              <MonthlyExpenses />
+              <Milestones />
             </div>
           </div>
-        </AppLayout>
-      </TradeProvider>
-    </BrokerageAccountsProvider>
+        </div>
+      </AppLayout>
+    </FinanceProvider>
   );
 };
 
