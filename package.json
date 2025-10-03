@@ -5,10 +5,16 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "dev:server": "cd server && npm run dev",
     "build": "vite build",
     "build:dev": "vite build --mode development",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "server:install": "cd server && npm install",
+    "db:migrate": "cd server && npx prisma migrate dev",
+    "db:generate": "cd server && npx prisma generate",
+    "db:studio": "cd server && npx prisma studio",
+    "setup": "npm install && npm run server:install && npm run db:migrate && npm run db:generate"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.0",

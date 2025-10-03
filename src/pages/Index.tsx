@@ -15,7 +15,7 @@ const Dashboard: React.FC = () => {
     <AppLayout>
       <div className="space-y-6">
         <div className="flex items-center justify-between">
-          <h1 className="text-3xl font-bold tracking-tight">Finance Dashboard</h1>
+          <h1 className="text-3xl font-bold tracking-tight text-white">Finance Dashboard</h1>
         </div>
 
         <ScenarioSummary />
@@ -29,11 +29,10 @@ const Dashboard: React.FC = () => {
           <div className="space-y-6">
             <MonthlyExpenses />
             <Milestones />
+            <FinancialDetails />
+            <DataExport />
           </div>
         </div>
-
-        <FinancialDetails />
-        <DataExport />
       </div>
     </AppLayout>
   );

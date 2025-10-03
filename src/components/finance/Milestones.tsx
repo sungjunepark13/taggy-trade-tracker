@@ -1,21 +1,40 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useFinance } from '@/context/FinanceContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { CheckCircle, Clock } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { CheckCircle, Clock, ChevronDown, ChevronUp } from 'lucide-react';
 
 const Milestones: React.FC = () => {
   const { state } = useFinance();
+  const [isExpanded, setIsExpanded] = useState(false);
 
   const achievedMilestones = state.milestones.filter(milestone => milestone.achieved);
   const upcomingMilestones = state.milestones.filter(milestone => !milestone.achieved);
 
+  const toggleExpanded = () => {
+    setIsExpanded(!isExpanded);
+  };
+
   return (
     <Card>
-      <CardHeader>
+      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
         <CardTitle>Milestones</CardTitle>
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={toggleExpanded}
+          className="h-8 w-8 p-0"
+        >
+          {isExpanded ? (
+            <ChevronUp className="h-4 w-4" />
+          ) : (
+            <ChevronDown className="h-4 w-4" />
+          )}
+        </Button>
       </CardHeader>
-      <CardContent className="space-y-4">
+      {isExpanded && (
+        <CardContent className="space-y-4">
         {achievedMilestones.length > 0 && (
           <div>
             <h4 className="text-sm font-medium text-success mb-2 flex items-center gap-2">
@@ -65,7 +84,8 @@ const Milestones: React.FC = () => {
             No milestones available
           </p>
         )}
-      </CardContent>
+        </CardContent>
+      )}
     </Card>
   );
 };

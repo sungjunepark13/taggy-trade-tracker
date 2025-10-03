@@ -46,8 +46,8 @@ const getAccountCalculations = (accountKey: string, snapshot: any, value: number
     case 'house':
       return [
         { label: 'Down Payment Saved', value: snapshot.downPayment },
-        { label: 'Target', value: 75000 },
-        { label: 'Remaining', value: Math.max(0, 75000 - snapshot.downPayment) }
+        { label: 'Target', value: 60000 },
+        { label: 'Remaining', value: Math.max(0, 60000 - snapshot.downPayment) }
       ];
     case 'vacationFund':
       return [
@@ -56,12 +56,12 @@ const getAccountCalculations = (accountKey: string, snapshot: any, value: number
         { label: 'Well-being Subsidy', value: snapshot.wellBeingSubsidy },
         { label: 'Progress', value: `${(snapshot.vacationFund / 5000 * 100).toFixed(1)}%`, isPercentage: true }
       ];
-    case 'trustFund':
+    case 'charityFund':
       return [
-        { label: 'Current Balance', value: snapshot.trustFund },
+        { label: 'Current Balance', value: snapshot.charityFund },
         { label: '5-Year Target', value: 50000 },
         { label: 'Monthly Goal', value: 833 },
-        { label: 'Progress', value: `${(snapshot.trustFund / 50000 * 100).toFixed(1)}%`, isPercentage: true }
+        { label: 'Progress', value: `${(snapshot.charityFund / 50000 * 100).toFixed(1)}%`, isPercentage: true }
       ];
     default:
       return [{ label: 'Value', value }];

@@ -1,14 +1,21 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { useFinance } from '@/context/FinanceContext';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { CalculationTooltip } from '@/components/ui/calculation-tooltip';
+import { Button } from '@/components/ui/button';
+import { ChevronDown, ChevronUp } from 'lucide-react';
 
 export const FinancialDetails: React.FC = () => {
   const { state, getCurrentSnapshot } = useFinance();
   const snapshot = getCurrentSnapshot();
+  const [isExpanded, setIsExpanded] = useState(false);
+
+  const toggleExpanded = () => {
+    setIsExpanded(!isExpanded);
+  };
 
   if (!snapshot) return null;
 
@@ -26,14 +33,31 @@ export const FinancialDetails: React.FC = () => {
   };
 
   return (
-    <div className="space-y-6">
-      <Tabs defaultValue="current" className="w-full">
-        <TabsList className="grid w-full grid-cols-4">
-          <TabsTrigger value="current">Current Month</TabsTrigger>
-          <TabsTrigger value="taxes">Tax Breakdown</TabsTrigger>
-          <TabsTrigger value="allocations">Allocations</TabsTrigger>
-          <TabsTrigger value="reconciliation">Reconciliation</TabsTrigger>
-        </TabsList>
+    <Card>
+      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+        <CardTitle>Financial Details</CardTitle>
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={toggleExpanded}
+          className="h-8 w-8 p-0"
+        >
+          {isExpanded ? (
+            <ChevronUp className="h-4 w-4" />
+          ) : (
+            <ChevronDown className="h-4 w-4" />
+          )}
+        </Button>
+      </CardHeader>
+      {isExpanded && (
+        <CardContent>
+          <Tabs defaultValue="current" className="w-full">
+            <TabsList className="grid w-full grid-cols-4">
+              <TabsTrigger value="current">Current Month</TabsTrigger>
+              <TabsTrigger value="taxes">Tax Breakdown</TabsTrigger>
+              <TabsTrigger value="allocations">Allocations</TabsTrigger>
+              <TabsTrigger value="reconciliation">Reconciliation</TabsTrigger>
+            </TabsList>
 
         <TabsContent value="current" className="space-y-4">
           <Card>
@@ -440,16 +464,16 @@ export const FinancialDetails: React.FC = () => {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {snapshot.allocTrustFund > 0 && (
+                  {snapshot.allocCharity > 0 && (
                     <TableRow>
                       <TableCell>
-                        Children's Trust Fund
-                        {snapshot.allocTrustFund > 833.33 && (
+                        Charity Fund
+                        {snapshot.allocCharity > 833.33 && (
                           <Badge variant="destructive" className="ml-2">Over Budget</Badge>
                         )}
                       </TableCell>
                       <TableCell className="text-right">
-                        {formatCurrency(snapshot.allocTrustFund)}
+                        {formatCurrency(snapshot.allocCharity)}
                       </TableCell>
                     </TableRow>
                   )}
@@ -548,13 +572,13 @@ export const FinancialDetails: React.FC = () => {
 
                 <div>
                   <div className="flex justify-between mb-1">
-                    <span className="text-sm">Children's Trust Fund</span>
-                    <span className="text-sm">{formatCurrency(snapshot.trustFund)} / $50,000</span>
+                    <span className="text-sm">Charity Fund</span>
+                    <span className="text-sm">{formatCurrency(snapshot.charityFund)} / $50,000</span>
                   </div>
                   <div className="w-full bg-gray-200 rounded-full h-2">
                     <div
                       className="bg-indigo-600 h-2 rounded-full"
-                      style={{ width: `${Math.min(100, (snapshot.trustFund / 50000) * 100)}%` }}
+                      style={{ width: `${Math.min(100, (snapshot.charityFund / 50000) * 100)}%` }}
                     />
                   </div>
                 </div>
@@ -662,7 +686,9 @@ export const FinancialDetails: React.FC = () => {
             </CardContent>
           </Card>
         </TabsContent>
-      </Tabs>
-    </div>
+          </Tabs>
+        </CardContent>
+      )}
+    </Card>
   );
 };

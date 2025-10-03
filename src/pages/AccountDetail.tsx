@@ -90,9 +90,17 @@ const getBalanceWithTooltip = (accountKey: string, value: number, snapshot: any)
     case 'miscellaneous':
       calculations = [
         { label: 'Vacation Fund', value: snapshot.vacationFund },
-        { label: 'Children\'s Trust Fund', value: snapshot.trustFund },
+        { label: 'Charity Fund', value: snapshot.charityFund },
         { label: 'Well-being Subsidy', value: snapshot.wellBeingSubsidy },
-        { label: 'Total Combined', value: snapshot.vacationFund + snapshot.trustFund, isTotal: true }
+        { label: 'Total Combined', value: snapshot.vacationFund + snapshot.charityFund, isTotal: true }
+      ];
+      break;
+    case 'charityFund':
+      calculations = [
+        { label: 'Current Balance', value: snapshot.charityFund },
+        { label: '5-Year Target', value: 50000 },
+        { label: 'Monthly Goal', value: 833 },
+        { label: 'Progress', value: (snapshot.charityFund / 50000 * 100).toFixed(1) + '%' }
       ];
       break;
     default:
@@ -211,34 +219,34 @@ const AccountDetail: React.FC = () => {
       ],
       about: 'The vacation fund ensures work-life balance and creates lasting family memories. Regular vacations are essential for mental health, relationship building, and experiencing new cultures. The Deloitte well-being subsidy makes this goal more achievable, covering 20% of the annual target automatically.'
     },
-    trustFund: {
-      title: 'Children\'s Trust Fund',
-      description: 'Long-term savings for future children\'s education and life opportunities. Target of $50,000 over 5 years (~$833/month) to provide a strong financial foundation.',
-      strategy: 'Systematic Investment Strategy: Contribute ~$833/month consistently to reach $50,000 in 5 years. Consider tax-advantaged accounts like 529 plans for education expenses. Invest in age-appropriate portfolios that become more conservative as children approach college age.',
+    charityFund: {
+      title: 'Charity Fund',
+      description: 'Long-term charitable giving fund. Target of $50,000 over 5 years (~$833/month) to support causes we care about and make a positive impact in the community.',
+      strategy: 'Strategic Giving Strategy: Contribute ~$833/month consistently to reach $50,000 in 5 years. Plan charitable contributions for maximum tax efficiency. Consider donor-advised funds for flexibility in timing donations.',
       tips: [
         '5-Year Target: $50,000',
         'Monthly Goal: $833',
-        'Consider 529 education savings plan',
-        'Invest in diversified growth portfolios',
-        'Can be used for education, first home, or business',
-        'Review and adjust allocation annually',
-        'Consider UTMA/UGMA accounts for flexibility'
+        'Consider donor-advised funds for flexibility',
+        'Plan donations for tax efficiency',
+        'Research charities for maximum impact',
+        'Track charitable receipts for tax deductions',
+        'Consider matching gift programs from employers'
       ],
-      about: 'The children\'s trust fund is an investment in the next generation\'s success. This fund can cover college expenses, help with a first home purchase, or seed a business venture. Starting early leverages compound growth and demonstrates long-term financial planning to your children.'
+      about: 'The charity fund represents our commitment to giving back and making a positive impact in our community and beyond. This fund enables strategic charitable giving, supporting causes we care about while also providing tax benefits. It demonstrates our values and commitment to social responsibility.'
     },
     miscellaneous: {
-      title: 'Vacation & Trust Funds',
-      description: 'Combined savings for annual vacations ($5k target) and children\'s trust fund ($50k target over 5 years). Vacation fund receives the well-being subsidy from Deloitte ($1,000/year).',
-      strategy: 'Dual-Purpose Savings Strategy: Build vacation fund to $5k for annual family trips while systematically contributing ~$833/month to children\'s trust fund. The trust fund will provide educational and life opportunities for future children.',
+      title: 'Vacation & Charity Funds',
+      description: 'Combined savings for annual vacations ($5k target) and charitable giving ($50k target over 5 years). Vacation fund receives the well-being subsidy from Deloitte ($1,000/year).',
+      strategy: 'Dual-Purpose Savings Strategy: Build vacation fund to $5k for annual family trips while systematically contributing ~$833/month to charity fund. The charity fund enables strategic giving to causes we care about.',
       tips: [
         'Vacation fund target: $5,000 for annual trips',
-        'Trust fund target: $50,000 over 5 years (~$833/month)',
+        'Charity fund target: $50,000 over 5 years (~$833/month)',
         'Well-being subsidy ($83.33/month) goes to vacation fund',
-        'Consider 529 plans for tax-advantaged education savings',
-        'Invest trust fund in age-appropriate portfolios',
+        'Consider donor-advised funds for flexible charitable giving',
+        'Plan charitable contributions strategically for tax efficiency',
         'Keep vacation fund liquid for annual use'
       ],
-      about: 'These funds serve two important family purposes: creating memories through annual vacations and securing your children\'s future through a trust fund. The vacation fund ensures work-life balance and family bonding, while the trust fund provides financial security and opportunities for the next generation. The Deloitte well-being subsidy helps fund vacations, making this goal more achievable.'
+      about: 'These funds serve two important personal purposes: creating memories through annual vacations and making a positive impact through charitable giving. The vacation fund ensures work-life balance and family bonding, while the charity fund enables us to support causes we believe in and give back to the community. The Deloitte well-being subsidy helps fund vacations, making this goal more achievable.'
     }
   };
 

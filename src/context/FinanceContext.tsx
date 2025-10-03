@@ -1,5 +1,8 @@
-import React, { createContext, useContext, useState, useEffect, useMemo } from 'react';
+import React, { createContext, useContext, useState, useEffect } from 'react';
 import { FinancialEngine, MonthlySnapshot } from '../utils/financialEngine';
+import { useAuth } from './AuthContext';
+
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 
 export interface AccountData {
   month: number;
@@ -10,7 +13,7 @@ export interface AccountData {
   checking: number;
   miscellaneous: number;
   vacationFund: number;
-  trustFund: number;
+  charityFund: number;
 }
 
 export interface MonthlyExpense {
@@ -40,25 +43,44 @@ interface FinanceContextProps {
   state: FinanceState;
   setCurrentMonth: (month: number) => void;
   getCurrentSnapshot: () => MonthlySnapshot | undefined;
+  loadingHousehold: boolean;
+  householdError: string | null;
+  refreshHousehold: () => Promise<void>;
 }
 
-// Initialize financial engine and run simulation
-const engine = new FinancialEngine();
-const snapshots = engine.simulate();
-const reconciliation = engine.getAnnualReconciliation();
+// Generate default data when no household exists
+const generateDefaultData = () => {
+  // Try to load scenario from localStorage first
+  let customScenario = undefined;
+  try {
+    const stored = localStorage.getItem('financialScenario');
+    if (stored) {
+      customScenario = JSON.parse(stored);
+      console.log('Loaded financial scenario from localStorage:', customScenario);
+    }
+  } catch (error) {
+    console.error('Error loading financial scenario from localStorage:', error);
+  }
+
+  const engine = new FinancialEngine(customScenario);
+  const snapshots = engine.simulate();
+  const reconciliation = engine.getAnnualReconciliation();
+
+  return { snapshots, reconciliation };
+};
 
 // Convert snapshots to AccountData format for UI compatibility
-const generateAccountData = (): AccountData[] => {
+const generateAccountData = (snapshots: MonthlySnapshot[]): AccountData[] => {
   return snapshots.map(snapshot => ({
     month: snapshot.month,
     debt: snapshot.totalDebt,
     retirement401: snapshot.retirementBalanceTotal,
-    house: snapshot.downPayment, // Using down payment as proxy for house savings
+    house: snapshot.downPayment,
     emergencyFund: snapshot.emergencyFund,
-    checking: snapshot.earnest, // Using earnest money as checking proxy
-    miscellaneous: 0, // Deprecated - using separate vacation and trust funds
+    checking: snapshot.earnest,
+    miscellaneous: 0,
     vacationFund: snapshot.vacationFund,
-    trustFund: snapshot.trustFund,
+    charityFund: snapshot.charityFund,
   }));
 };
 
@@ -82,7 +104,7 @@ const generateMonthlyExpenses = (snapshot?: MonthlySnapshot): MonthlyExpense[] =
 };
 
 // Extract milestones from snapshots
-const generateMilestones = (): Milestone[] => {
+const generateMilestones = (snapshots: MonthlySnapshot[]): Milestone[] => {
   const milestoneList: Milestone[] = [];
   const milestoneMap = new Map<string, number>();
 
@@ -174,25 +196,107 @@ const generateMilestones = (): Milestone[] => {
   return milestoneList.sort((a, b) => (a.actualMonth || a.targetMonth) - (b.actualMonth || b.targetMonth));
 };
 
-const initialAccountData: AccountData[] = generateAccountData();
-const initialMilestones: Milestone[] = generateMilestones();
-
-const initialState: FinanceState = {
-  accountData: initialAccountData,
-  monthlyExpenses: generateMonthlyExpenses(snapshots[0]),
-  milestones: initialMilestones,
-  currentMonth: 1,
-  snapshots,
-  reconciliation,
+const getInitialState = (): FinanceState => {
+  const { snapshots, reconciliation } = generateDefaultData();
+  return {
+    accountData: generateAccountData(snapshots),
+    monthlyExpenses: generateMonthlyExpenses(snapshots[0]),
+    milestones: generateMilestones(snapshots),
+    currentMonth: 1,
+    snapshots,
+    reconciliation,
+  };
 };
 
 const FinanceContext = createContext<FinanceContextProps | undefined>(undefined);
 
 export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [state, setState] = useState<FinanceState>(initialState);
+  const [state, setState] = useState<FinanceState>(getInitialState());
+  const [loadingHousehold, setLoadingHousehold] = useState(false);
+  const [householdError, setHouseholdError] = useState<string | null>(null);
+  const { isAuthenticated, user } = useAuth();
+
+  // Fetch household data from API when user is authenticated
+  const fetchHousehold = async () => {
+    if (!isAuthenticated || !user) {
+      // Use default data if not authenticated
+      setState(getInitialState());
+      return;
+    }
+
+    setLoadingHousehold(true);
+    setHouseholdError(null);
+
+    try {
+      const response = await fetch(`${API_URL}/api/household`, {
+        credentials: 'include',
+      });
+
+      if (response.status === 404) {
+        // No household setup yet, use default data
+        setState(getInitialState());
+        return;
+      }
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch household data');
+      }
+
+      const data = await response.json();
+      const household = data.household;
+
+      // Convert household data to scenario format and regenerate financial data
+      // For now, use default data - in future, this would convert household to scenario
+      // TODO: Implement conversion from household API data to FinancialEngine scenario
+      const { snapshots, reconciliation } = generateDefaultData();
+
+      setState({
+        accountData: generateAccountData(snapshots),
+        monthlyExpenses: generateMonthlyExpenses(snapshots[0]),
+        milestones: generateMilestones(snapshots),
+        currentMonth: 1,
+        snapshots,
+        reconciliation,
+      });
+    } catch (error) {
+      console.error('Error fetching household:', error);
+      setHouseholdError(error instanceof Error ? error.message : 'Failed to load household data');
+      // Use default data on error
+      setState(getInitialState());
+    } finally {
+      setLoadingHousehold(false);
+    }
+  };
+
+  // Load household data when user authenticates
+  useEffect(() => {
+    fetchHousehold();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isAuthenticated, user?.id]);
+
+  // Listen for changes to localStorage (e.g., when intake form is submitted)
+  useEffect(() => {
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === 'financialScenario') {
+        console.log('Financial scenario updated in localStorage, regenerating data...');
+        const { snapshots, reconciliation } = generateDefaultData();
+        setState({
+          accountData: generateAccountData(snapshots),
+          monthlyExpenses: generateMonthlyExpenses(snapshots[0]),
+          milestones: generateMilestones(snapshots),
+          currentMonth: 1,
+          snapshots,
+          reconciliation,
+        });
+      }
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
+  }, []);
 
   const setCurrentMonth = (month: number) => {
-    const snapshot = snapshots[month - 1];
+    const snapshot = state.snapshots[month - 1];
     setState(prev => ({
       ...prev,
       currentMonth: month,
@@ -208,8 +312,19 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
     return state.snapshots[state.currentMonth - 1];
   };
 
+  const refreshHousehold = async () => {
+    await fetchHousehold();
+  };
+
   return (
-    <FinanceContext.Provider value={{ state, setCurrentMonth, getCurrentSnapshot }}>
+    <FinanceContext.Provider value={{
+      state,
+      setCurrentMonth,
+      getCurrentSnapshot,
+      loadingHousehold,
+      householdError,
+      refreshHousehold
+    }}>
       {children}
     </FinanceContext.Provider>
   );

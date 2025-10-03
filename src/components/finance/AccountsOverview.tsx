@@ -55,10 +55,10 @@ const AccountsOverview: React.FC = () => {
       accountKey: 'vacationFund',
     },
     {
-      title: "Children's Trust",
-      value: currentData.trustFund,
+      title: "Charity Fund",
+      value: currentData.charityFund,
       icon: Baby,
-      accountKey: 'trustFund',
+      accountKey: 'charityFund',
     },
   ];
 

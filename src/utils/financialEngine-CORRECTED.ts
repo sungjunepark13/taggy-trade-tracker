@@ -12,11 +12,11 @@ export interface MonthlySnapshot {
   employee401kRate: number;
   employee401kMonthly: number;
   employerMatchMonthly: number;
-  employerWealthBuilderMonthly: number; // PwC Wealth Builder + Deloitte Cash Balance
+  employerWealthBuilderMonthly: number;
   hsaEmployeeMonthly: number;
   hsaEmployerMonthly: number;
-  studentLoanAssistance: number; // PwC $100/month
-  wellBeingSubsidy: number; // Deloitte $1000/year = $83.33/month
+  studentLoanAssistance: number;
+  wellBeingSubsidy: number;
   fedTaxMonthly: number;
   stateTaxMonthly: number;
   ficaMonthly: number;
@@ -28,14 +28,14 @@ export interface MonthlySnapshot {
   allocEFStarter: number;
   allocDebtAvalanche: number;
   allocVacation: number;
-  allocCharity: number;
+  allocTrustFund: number;
   allocDownPayment: number;
   allocEFFinal: number;
   earnest: number;
   emergencyFund: number;
   downPayment: number;
   vacationFund: number;
-  charityFund: number;
+  trustFund: number;
   debtPrivate10: number;
   debtStudent7: number;
   debtPrivate0: number;
@@ -54,23 +54,11 @@ export interface MonthlySnapshot {
   milestone: string;
 }
 
-export interface EmploymentInfo {
-  firm: 'PwC' | 'Deloitte';
-  position: 'Associate' | 'Senior Associate' | 'Manager' | 'Senior Manager' | 'Director' | 'Partner';
-  yearsAtFirm: number;
-  yearsPlannedToStay: number;
-  location: string;
-}
-
 export interface FinancialScenario {
   filingStatus: 'MFJ' | 'Single';
   ages: { primary: number; spouse?: number };
   location: string;
   planningHorizon: number;
-
-  // Employment information (new)
-  employment?: EmploymentInfo;
-
   incomeByYear: number[];
   monthlyExpenses: number;
   monthlyExpenseDetails?: {
@@ -97,13 +85,13 @@ export interface FinancialScenario {
   efFinalTarget: number;
   downPaymentTarget: number;
   vacationFundTarget: number;
-  charityTarget: number;
+  trustFundTarget: number;
 }
 
-// Calculate monthly gross for tithing (base salary only, not benefits)
+// CORRECTED: Base salary only, no benefits included
 const baseSalaryYear1 = 160000;
 const monthlyGrossBase = baseSalaryYear1 / 12;
-const monthlyTithing = monthlyGrossBase * 0.10; // 10% of gross income
+const monthlyTithing = monthlyGrossBase * 0.10;
 
 const DEFAULT_SCENARIO: FinancialScenario = {
   filingStatus: 'MFJ',
@@ -112,11 +100,10 @@ const DEFAULT_SCENARIO: FinancialScenario = {
   planningHorizon: 60,
   // CORRECTED: Base salaries ONLY - no benefits added to gross
   // Year 1: ~80k each = 160k combined
-  // Progression assumes promotions/raises over 5 years
+  // Progression assumes promotions/raises
   incomeByYear: [160000, 185000, 214000, 248000, 287000],
-  monthlyExpenses: 5700, // Total of all expense categories
+  monthlyExpenses: 5700,
   monthlyExpenseDetails: {
-    // Housing & Utilities
     rent: 2000,
     parking: 200,
     rentersInsurance: 30,
@@ -125,17 +112,14 @@ const DEFAULT_SCENARIO: FinancialScenario = {
     waterSewerTrash: 90,
     internet: 70,
     mobilePhones: 120,
-    subscriptions: 350, // Includes $300 developer tools + $50 streaming
-    // Transportation (2 cars)
+    subscriptions: 350,
     autoInsurance: 600,
     gas: 300,
     maintenance: 140,
     registration: 8,
-    // Food & Living
     eatingOut: 600,
     groceries: 400,
-    // Charitable
-    tithing: monthlyTithing // 10% of gross income
+    tithing: monthlyTithing
   },
   initialDebts: [
     { name: 'Private 10%', balance: 50000, apr: 0.10, minimumPayment: 600 },
@@ -145,9 +129,9 @@ const DEFAULT_SCENARIO: FinancialScenario = {
   earnestMoneyTarget: 15000,
   efStarterTarget: 5000,
   efFinalTarget: 20000,
-  downPaymentTarget: 60000, // Adjusted for correct income calculation
-  vacationFundTarget: 5000, // $5k vacation fund by end of year
-  charityTarget: 50000 // $50k charity fund in 5 years
+  downPaymentTarget: 60000, // More realistic without inflated income
+  vacationFundTarget: 5000,
+  trustFundTarget: 50000
 };
 
 export class FinancialEngine {
@@ -209,9 +193,7 @@ export class FinancialEngine {
 
     const ssWages = Math.min(annualGross, ssCap);
     const socialSecurity = ssWages * 0.062;
-
     const medicare = annualGross * 0.0145;
-
     const additionalMedicare = annualGross > medicareThreshold ?
       (annualGross - medicareThreshold) * 0.009 : 0;
 
@@ -222,7 +204,7 @@ export class FinancialEngine {
     // CORRECTED: annualGross is already the base salary, no adjustment needed
     const baseSalary = annualGross;
 
-    // 401k: Both contribute 6% to get full match
+    // Employee contributions (reduce taxable income)
     const employee401kRate = goalsComplete ? 0.15 : 0.06;
     const employee401kAnnual = baseSalary * employee401kRate;
     const employee401kMonthly = employee401kAnnual / 12;
@@ -235,14 +217,15 @@ export class FinancialEngine {
     // Wealth Builder (PwC 3%) + Cash Balance (Deloitte 3%) = 6% combined
     const employerWealthBuilderMonthly = (baseSalary * 0.06) / 12;
 
-    // HSA contributions (both on HDHP)
-    const hsaEmployeeMonthly = goalsComplete ? 200 : 0; // Optional employee contribution
-    const hsaEmployerMonthly = 58.33; // PwC $700/year = $58.33/month
+    // HSA contributions
+    const hsaEmployeeMonthly = goalsComplete ? 200 : 0;
+    const hsaEmployerMonthly = 58.33; // $700/year
 
     // Other employer benefits (NOT part of gross income)
-    const studentLoanAssistance = 100; // PwC $100/month - applied directly to debt
-    const wellBeingSubsidy = 83.33; // Deloitte $1000/year - applied to vacation fund
+    const studentLoanAssistance = 100; // PwC $100/month
+    const wellBeingSubsidy = 83.33; // Deloitte $1000/year
 
+    // Tax calculations on actual gross income
     const standardDeductionMFJ = 29200;
     const hsaAnnualDeduction = (hsaEmployeeMonthly + hsaEmployerMonthly) * 12;
     const taxableIncome = Math.max(0, annualGross - employee401kAnnual - hsaAnnualDeduction - standardDeductionMFJ);
@@ -253,7 +236,7 @@ export class FinancialEngine {
     const stateTaxAnnual = gaStateTaxableIncome * 0.0519;
     const ficaAnnual = this.calculateFICA(annualGross);
 
-    // CORRECTED: Net take home based on actual gross salary (no benefits included)
+    // CORRECTED: Net take home based on actual gross salary
     const netTakeHomeAnnual = annualGross - employee401kAnnual - hsaEmployeeMonthly * 12 - fedTaxAnnual - stateTaxAnnual - ficaAnnual;
     const netTakeHomeMonthly = netTakeHomeAnnual / 12;
 
@@ -281,7 +264,7 @@ export class FinancialEngine {
     let emergencyFund = 0;
     let downPayment = 0;
     let vacationFund = 0;
-    let charityFund = 0;
+    let trustFund = 0;
     let retirementBalanceBase = 0;
     let retirementBalanceExtra = 0;
     let employee401k = 0;
@@ -301,6 +284,7 @@ export class FinancialEngine {
 
       const taxes = this.calculateTaxes(month, annualGross, goalsComplete);
 
+      // Pay debt minimums
       let totalMinimumsPaid = 0;
       debts.forEach(debt => {
         if (debt.balance > 0) {
@@ -317,7 +301,6 @@ export class FinancialEngine {
       // Calculate actual monthly expenses including dynamic tithing
       let actualMonthlyExpenses = this.scenario.monthlyExpenses;
       if (this.scenario.monthlyExpenseDetails) {
-        // Recalculate total with current tithing amount
         const details = this.scenario.monthlyExpenseDetails;
         actualMonthlyExpenses = details.rent + details.parking + details.rentersInsurance +
           details.electricity + details.naturalGas + details.waterSewerTrash +
@@ -331,13 +314,11 @@ export class FinancialEngine {
       const tithingYTD = monthInYear === 1 ? monthlyTithingAmount :
         (monthInYear * monthlyTithingAmount);
 
-      // Reset carryforward at year start, accumulate during year
       if (monthInYear === 1 && month > 1) {
         tithingCarryforward += tithingYTD;
       }
 
-      // Goal budget is net income minus expenses and debt minimums
-      // Subsidies are handled separately: loan assistance for debt, well-being for vacation
+      // Goal budget from net income
       const goalBudget = Math.max(0, taxes.netTakeHomeMonthly - actualMonthlyExpenses - totalMinimumsPaid);
 
       let remainingBudget = goalBudget;
@@ -346,12 +327,13 @@ export class FinancialEngine {
         efStarter: 0,
         debtAvalanche: 0,
         vacation: 0,
-        charity: 0,
+        trustFund: 0,
         downPayment: 0,
         efFinal: 0
       };
       const allocLabels: string[] = [];
 
+      // Priority 1: Earnest money
       if (earnest < this.scenario.earnestMoneyTarget && remainingBudget > 0) {
         const alloc = Math.min(remainingBudget, this.scenario.earnestMoneyTarget - earnest);
         allocations.earnest = alloc;
@@ -360,6 +342,7 @@ export class FinancialEngine {
         allocLabels.push('Earnest');
       }
 
+      // Priority 2: Emergency fund starter
       if (emergencyFund < this.scenario.efStarterTarget && remainingBudget > 0) {
         const alloc = Math.min(remainingBudget, this.scenario.efStarterTarget - emergencyFund);
         allocations.efStarter = alloc;
@@ -418,20 +401,18 @@ export class FinancialEngine {
         allocLabels.push('EF-Final');
       }
 
-      // Priority 6: Charity fund ($50k in 5 years)
-      // Start contributing AFTER debt is mostly paid (month 30+) to ensure we have enough cash flow
-      // We need about $1,500/month from months 30-60 to reach $50k
-      if (month >= 30 && charityFund < this.scenario.charityTarget && remainingBudget > 0) {
+      // Priority 6: Trust fund (start after month 30)
+      if (month >= 30 && trustFund < this.scenario.trustFundTarget && remainingBudget > 0) {
         const monthsRemaining = Math.max(1, 60 - month + 1);
-        const neededMonthly = (this.scenario.charityTarget - charityFund) / monthsRemaining;
-        const alloc = Math.min(remainingBudget, Math.min(neededMonthly, this.scenario.charityTarget - charityFund));
-        allocations.charity = alloc;
-        charityFund += alloc;
+        const neededMonthly = (this.scenario.trustFundTarget - trustFund) / monthsRemaining;
+        const alloc = Math.min(remainingBudget, Math.min(neededMonthly, this.scenario.trustFundTarget - trustFund));
+        allocations.trustFund = alloc;
+        trustFund += alloc;
         remainingBudget -= alloc;
-        allocLabels.push('Charity');
+        allocLabels.push('Trust-Fund');
       }
 
-      // Priority 7: House down payment - gets remaining budget
+      // Priority 7: House down payment
       if (remainingBudget > 0) {
         allocations.downPayment = remainingBudget;
         downPayment += remainingBudget;
@@ -439,24 +420,23 @@ export class FinancialEngine {
         remainingBudget = 0;
       }
 
-      // Track retirement components separately (minimum contributions only)
+      // Track retirement accounts (employer contributions added directly)
       employee401k += taxes.employee401kMonthly;
       employerMatch += taxes.employerMatchMonthly;
       employerWealthBuilder += taxes.employerWealthBuilderMonthly;
       hsaBalance += taxes.hsaEmployeeMonthly + taxes.hsaEmployerMonthly;
 
-      // Apply growth to all retirement accounts
+      // Apply growth to retirement accounts
       const monthlyGrowthRate = Math.pow(1.06, 1/12) - 1;
       employee401k *= (1 + monthlyGrowthRate);
       employerMatch *= (1 + monthlyGrowthRate);
       employerWealthBuilder *= (1 + monthlyGrowthRate);
       hsaBalance *= (1 + monthlyGrowthRate);
-      // No extra retirement contributions anymore
       retirementBalanceExtra = 0;
 
-      // Calculate total retirement balances
       retirementBalanceBase = employee401k + employerMatch + employerWealthBuilder + hsaBalance;
 
+      // Track milestones
       const milestones: string[] = [];
 
       if (earnest >= this.scenario.earnestMoneyTarget && !this.milestoneTracker.has('earnest15k')) {
@@ -495,19 +475,9 @@ export class FinancialEngine {
         milestones.push('Vacation fund $5k reached');
       }
 
-      if (charityFund >= 10000 && !this.milestoneTracker.has('charity10k')) {
-        this.milestoneTracker.add('charity10k');
-        milestones.push('Charity fund $10k milestone');
-      }
-
-      if (charityFund >= 25000 && !this.milestoneTracker.has('charity25k')) {
-        this.milestoneTracker.add('charity25k');
-        milestones.push('Charity fund $25k milestone');
-      }
-
-      if (charityFund >= this.scenario.charityTarget && !this.milestoneTracker.has('charity50k')) {
-        this.milestoneTracker.add('charity50k');
-        milestones.push('Charity fund $50k target reached!');
+      if (trustFund >= this.scenario.trustFundTarget && !this.milestoneTracker.has('trust50k')) {
+        this.milestoneTracker.add('trust50k');
+        milestones.push('Trust fund $50k target reached!');
       }
 
       if (goalsComplete && !this.milestoneTracker.has('rate15')) {
@@ -538,17 +508,17 @@ export class FinancialEngine {
         allocEFStarter: allocations.efStarter,
         allocDebtAvalanche: allocations.debtAvalanche,
         allocVacation: allocations.vacation,
-        allocCharity: allocations.charity,
+        allocTrustFund: allocations.trustFund,
         allocDownPayment: allocations.downPayment,
         allocEFFinal: allocations.efFinal,
         earnest,
         emergencyFund,
         downPayment,
         vacationFund,
-        charityFund,
-        debtPrivate10: debts[0]?.balance || 0,
-        debtStudent7: debts[1]?.balance || 0,
-        debtPrivate0: debts[2]?.balance || 0,
+        trustFund,
+        debtPrivate10: debts[0].balance,
+        debtStudent7: debts[1].balance,
+        debtPrivate0: debts[2].balance,
         totalDebt,
         retirementBalanceBase,
         retirementBalanceExtra,

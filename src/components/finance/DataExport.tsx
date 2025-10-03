@@ -1,11 +1,16 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useFinance } from '@/context/FinanceContext';
-import { Download } from 'lucide-react';
+import { Download, ChevronDown, ChevronUp } from 'lucide-react';
 
 export const DataExport: React.FC = () => {
   const { state } = useFinance();
+  const [isExpanded, setIsExpanded] = useState(false);
+
+  const toggleExpanded = () => {
+    setIsExpanded(!isExpanded);
+  };
 
   const exportToCSV = () => {
     const snapshots = state.snapshots;
@@ -148,19 +153,33 @@ export const DataExport: React.FC = () => {
 
   return (
     <Card>
-      <CardHeader>
+      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
         <CardTitle>Export Data</CardTitle>
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={toggleExpanded}
+          className="h-8 w-8 p-0"
+        >
+          {isExpanded ? (
+            <ChevronUp className="h-4 w-4" />
+          ) : (
+            <ChevronDown className="h-4 w-4" />
+          )}
+        </Button>
       </CardHeader>
-      <CardContent className="flex gap-4">
-        <Button onClick={exportToCSV} variant="outline">
-          <Download className="mr-2 h-4 w-4" />
-          Export Monthly Data (CSV)
-        </Button>
-        <Button onClick={exportReconciliation} variant="outline">
-          <Download className="mr-2 h-4 w-4" />
-          Export Reconciliation (CSV)
-        </Button>
-      </CardContent>
+      {isExpanded && (
+        <CardContent className="flex gap-4">
+          <Button onClick={exportToCSV} variant="outline">
+            <Download className="mr-2 h-4 w-4" />
+            Export Monthly Data (CSV)
+          </Button>
+          <Button onClick={exportReconciliation} variant="outline">
+            <Download className="mr-2 h-4 w-4" />
+            Export Reconciliation (CSV)
+          </Button>
+        </CardContent>
+      )}
     </Card>
   );
 };

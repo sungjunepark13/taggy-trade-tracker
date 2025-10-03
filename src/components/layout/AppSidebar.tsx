@@ -8,6 +8,7 @@ import {
   Tag,
   Calendar,
   Menu,
+  Settings,
 } from 'lucide-react';
 import {
   Sidebar,
@@ -32,7 +33,7 @@ const AppSidebar: React.FC = () => {
   const menuItems = [
     {
       title: 'Dashboard',
-      path: '/',
+      path: '/dashboard',
       icon: LayoutDashboard,
     },
     {
@@ -57,6 +58,14 @@ const AppSidebar: React.FC = () => {
     },
   ];
 
+  const settingsItems = [
+    {
+      title: 'Edit Financial Plan',
+      path: '/setup',
+      icon: Settings,
+    },
+  ];
+
   return (
     <Sidebar>
       <SidebarHeader className="p-4 flex items-center">
@@ -73,6 +82,26 @@ const AppSidebar: React.FC = () => {
           <SidebarGroupContent>
             <SidebarMenu>
               {menuItems.map((item) => (
+                <SidebarMenuItem key={item.title}>
+                  <SidebarMenuButton
+                    asChild
+                    isActive={isActive(item.path)}
+                  >
+                    <Link to={item.path} className="flex items-center">
+                      <item.icon className="mr-2 h-5 w-5" />
+                      <span>{item.title}</span>
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              ))}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+        <SidebarGroup>
+          <SidebarGroupLabel>Settings</SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              {settingsItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton
                     asChild
